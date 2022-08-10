@@ -28,4 +28,4 @@ delegate_name
 
 delegate_namespace
 
-kubectl_config_context
+kubectl_config_context_name
