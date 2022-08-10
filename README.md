@@ -15,10 +15,8 @@ you will need to provide path and context . Alteratively use what ever credentia
 https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
 
 With this provider it will create exaclty the same kubernetes objects as the kubernetes YAML downloaded form Harness.
-Namely : Namespace , Cluster role binding , seecret and statefulset .
+Namely : Namespace , Cluster role binding , secret and statefulset .
 
-For the cloud provider and infrstructure binding it will use the Harness config as code rest api via the Terraform local-exec and curl commands 
-(therefore curl is required in the path where this manifest is run )
 
 ### Input parameters required for provisioning 
 
