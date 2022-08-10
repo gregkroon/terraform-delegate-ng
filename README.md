@@ -22,20 +22,12 @@ For the cloud provider and infrstructure binding it will use the Harness config 
 
 ### Input parameters required for provisioning 
 
-harness_api_key = Create one in the Harness UI , Security->Access management->API keys 
+harness_account_id
 
-harness_account_id = You can find this in your harness url or in the UI at Setup->Overview->Account id 
+harness_delegate_token
 
-harness_account_secret = In the delegate kubernetes yaml 
+delegate_name
 
-application_name = Existing application name 
+delegate_namespace
 
-environment_name = Existing environment name
-
-delegate_name = provided by you 
-
-cloud_provider_name = provided by you
-
-infrastructure_name = provided by you
-
-
+kubectl_config_context
