@@ -138,6 +138,10 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
           image             = "harness/delegate:latest"
           image_pull_policy = "Always"
 
+          port {
+            container_port = 8080
+          }
+
          
           resources {
             limits = {
@@ -181,47 +185,39 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
               value = var.harness_account_id
             }
           
-          env {
-              name = "DELEGATE_TOKEN"
-              value = var.harness_delegate_token
-            }
 
           env {
            name = "MANAGER_HOST_AND_PORT"
            value = "https://app.harness.io/gratis"
            }
-          env {
-           name = "WATCHER_STORAGE_URL"
-           value = "https://app.harness.io/public/free/freemium/watchers"
-          }
-          env{
-           name = "WATCHER_CHECK_LOCATION"
-           value = "current.version"
-          }
 
-          env{
-           name = "DELEGATE_STORAGE_URL"
-           value = "https://app.harness.io"
-          }
-
-
-          env{
-           name = "REMOTE_WATCHER_URL_CDN"
-           value = "https://app.harness.io/public/shared/watchers/builds"
-          }
-          env {
-           name = "DELEGATE_CHECK_LOCATION"
-           value = "delegatefree.txt"
-          }
-
-          env {
+         env {
             name = "DEPLOY_MODE"
             value = "KUBERNETES"   
           }
 
           env {
+           name = "DELEGATE_NAME"
+           value = var.delegate_name
+          }
+
+          env {
+           name = "DELEGATE_TYPE"
+           value = "KUBERNETES"
+         }
+
+         env {
+          name = "DELEGATE_NAMESPACE"
+          value_from {
+            field_ref {
+              field_path = "metadata.namespace"
+            }
+          }
+         }
+
+         env {
             name = "INIT_SCRIPT"
-            value = ""   
+            value = ""  
           }
 
           env {
@@ -240,17 +236,85 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
           }
 
           env {
-           name = "DELEGATE_NAME"
-           value = var.delegate_name
+              name = "DELEGATE_TOKEN"
+              value = var.harness_delegate_token
+            }
+
+
+
+          env {
+           name = "WATCHER_STORAGE_URL"
+           value = "https://app.harness.io/public/free/freemium/watchers"
           }
-        env {
-           name = "DELEGATE_PROFILE"
-           value = "B3RBC7YQRFOcdnqYUz-8uA"
+          env{
+           name = "WATCHER_CHECK_LOCATION"
+           value = "current.version"
+          }
+
+          env{
+           name = "DELEGATE_STORAGE_URL"
+           value = "https://app.harness.io"
+          }
+
+
+          env {
+           name = "DELEGATE_CHECK_LOCATION"
+           value = "delegatefree.txt"
+          }
+
+
+          env {
+           name = "HELM_DESIRED_VERSION"
+           value = ""
+          }
+
+
+          env {
+          name = "CDN_URL"
+          value = "https://app.harness.io"
+         }
+
+
+          env{
+           name = "REMOTE_WATCHER_URL_CDN"
+           value = "https://app.harness.io/public/shared/watchers/builds"
+          }
+
+
+          env {
+          name = "JRE_VERSION"
+          value = "11.0.14"
          }
 
          env {
-           name = "DELEGATE_TYPE"
-           value = "KUBERNETES"
+          name = "HELM3_PATH"
+          value = ""
+         }
+
+
+         env {
+          name = "HELM_PATH"
+          value = ""
+         }
+
+         env {
+          name = "KUSTOMIZE_PATH"
+          value = ""
+         }
+
+         env {
+          name = "KUBECTL_PATH"
+          value = ""
+         }
+
+         env {
+          name = "POLL_FOR_TASKS"
+          value = "false"
+         }
+
+         env {
+          name = "ENABlE_CE"
+          value = "false"
          }
 
          env {
@@ -269,6 +333,8 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
            name = "NO_PROXY"
            value = ""
          }
+
+
          env {
            name = "PROXY_MANAGER"
            value = "true"
@@ -291,37 +357,7 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
             }
           }
          }
-         
-         env {
-          name = "CDN_URL"
-          value = "https://app.harness.io"
-         }
-         env {
-          name = "JRE_VERSION"
-          value = "11.0.14"
-         }
-         env {
-          name = "HELM3_PATH"
-          value = ""
-         }
-         env {
-          name = "HELM_PATH"
-          value = ""
-         }
-      
-         env {
-          name = "KUSTOMIZE_PATH"
-          value = ""
-         }
-    
-         env {
-          name = "KUBECTL_PATH"
-          value = ""
-         }
-         env {
-          name = "ENABlE_CE"
-          value = "false"
-         }
+
          env {
           name = "GRPC_SERVICE_ENABLED"
           value = "true"
@@ -330,20 +366,7 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
           name = "GRPC_SERVICE_CONNECTOR_PORT"
           value = "8080"
          }
-         env {
-          name = "CLIENT_TOOLS_DOWNLOAD_DISABLED"
-          value = "false"
-         }
-         env {
-          name = "DELEGATE_NAMESPACE"
-          value_from {
-            field_ref {
-              field_path = "metadata.namespace"
-            }
-          }
-         }
-
-        
+  
    
     }
     restart_policy = "Always"
