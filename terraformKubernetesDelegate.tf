@@ -164,7 +164,7 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
 
           liveness_probe {
             exec {
-              command = ["bash","-c","'[[ -e /opt/harness-delegate/msg/data/watcher-data && $(($(date +%s000) - $(grep heartbeat /opt/harness-delegate/msg/data/watcher-data | cut -d : -f 2 | cut -d "," -f 1))) -lt 300000 ]]'"]
+              command = ["bash","-c","[[ -e /opt/harness-delegate/msg/data/watcher-data && $(($(date +%s000) - $(grep heartbeat /opt/harness-delegate/msg/data/watcher-data | cut -d \":\" -f 2 | cut -d \",\" -f 1))) -lt 300000 ]]"]
             }
 
             initial_delay_seconds = 240
