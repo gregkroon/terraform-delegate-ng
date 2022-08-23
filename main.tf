@@ -12,36 +12,36 @@ terraform {
 }
 
 provider "kubernetes" {
-  config_path = "~/.kube/config"
-  config_context = "${var.kubectl_config_context}"
+  config_path    = "~/.kube/config"
+  config_context = var.kubectl_config_context
 }
 
 
 #### INPUT VARIABLE SECTION ####
 
 variable "harness_account_id" {
-  type = string
+  type        = string
   description = "Harness SAAS account id"
 }
 
 variable "harness_delegate_token" {
-  type = string
+  type        = string
   description = "Harness SAAS delegate token"
 }
 
 variable "delegate_name" {
-  type = string
+  type        = string
   description = "Delegate Name"
 }
 
 
 variable "delegate_namespace" {
-  type = string
+  type        = string
   description = "Delegate Namespace"
 }
 
 variable "kubectl_config_context" {
-  type = string
+  type        = string
   description = "Config context name inside the kubeconfig file"
 }
 
@@ -57,7 +57,7 @@ resource "kubernetes_namespace" "delegatenamespace" {
       mylabel = ""
     }
 
-    name = "${var.delegate_namespace}"
+    name = var.delegate_namespace
   }
 }
 
@@ -70,7 +70,7 @@ resource "kubernetes_cluster_role_binding" "delegateclusterrolebinding" {
   subject {
     kind      = "ServiceAccount"
     name      = "default"
-    namespace = "${var.delegate_namespace}"
+    namespace = var.delegate_namespace
   }
   role_ref {
     api_group = "rbac.authorization.k8s.io"
@@ -83,12 +83,12 @@ resource "kubernetes_cluster_role_binding" "delegateclusterrolebinding" {
 
 resource "kubernetes_secret" "delegatesecret" {
   metadata {
-    name = "${var.delegate_name}-proxy"
-    namespace = "${var.delegate_namespace}"
+    name      = "${var.delegate_name}-proxy"
+    namespace = var.delegate_namespace
   }
 
   data = {
-    PROXY_USER = ""
+    PROXY_USER     = ""
     PROXY_PASSWORD = ""
   }
 
@@ -107,12 +107,12 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
       "harness.io/name" = "${var.delegate_name}"
     }
 
-    name = "${var.delegate_name}"
-    namespace = "${var.delegate_namespace}"
+    name      = var.delegate_name
+    namespace = var.delegate_namespace
   }
 
   spec {
-    replicas = 2
+    replicas              = 2
     pod_management_policy = "Parallel"
 
     selector {
@@ -128,7 +128,7 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
         labels = {
           "harness.io/name" = "${var.delegate_name}"
         }
-        
+
       }
 
       spec {
@@ -142,7 +142,7 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
             container_port = 8080
           }
 
-         
+
           resources {
             limits = {
               cpu    = "0.5"
@@ -153,248 +153,248 @@ resource "kubernetes_stateful_set" "delegatesatefulset" {
               memory = "2048Mi"
             }
           }
-           readiness_probe {
+          readiness_probe {
             exec {
-              command = ["test","-s","delegate.log"]
+              command = ["test", "-s", "delegate.log"]
             }
 
             initial_delay_seconds = 20
-            period_seconds       = 10
+            period_seconds        = 10
           }
 
           liveness_probe {
             exec {
-              command = ["bash","-c","[[ -e /opt/harness-delegate/msg/data/watcher-data && $(($(date +%s000) - $(grep heartbeat /opt/harness-delegate/msg/data/watcher-data | cut -d \":\" -f 2 | cut -d \",\" -f 1))) -lt 300000 ]]"]
+              command = ["bash", "-c", "[[ -e /opt/harness-delegate/msg/data/watcher-data && $(($(date +%s000) - $(grep heartbeat /opt/harness-delegate/msg/data/watcher-data | cut -d \":\" -f 2 | cut -d \",\" -f 1))) -lt 300000 ]]"]
             }
 
             initial_delay_seconds = 240
-            period_seconds       = 10
-            failure_threshold      = 2
+            period_seconds        = 10
+            failure_threshold     = 2
           }
-         
-
-
-          env {
-              name = "JAVA_OPTS"
-              value = "-Xms64M"
-            }
-
-
-          env {
-              name = "ACCOUNT_ID"
-              value = var.harness_account_id
-            }
-          
-
-          env {
-           name = "MANAGER_HOST_AND_PORT"
-           value = "https://app.harness.io/gratis"
-           }
-
-         env {
-            name = "DEPLOY_MODE"
-            value = "KUBERNETES"   
-          }
-
-          env {
-           name = "DELEGATE_NAME"
-           value = var.delegate_name
-          }
-
-          env {
-           name = "DELEGATE_TYPE"
-           value = "KUBERNETES"
-         }
-
-         env {
-          name = "DELEGATE_NAMESPACE"
-          value_from {
-            field_ref {
-              field_path = "metadata.namespace"
-            }
-          }
-         }
-
-         env {
-            name = "INIT_SCRIPT"
-            value = ""  
-          }
-
-          env {
-            name = "DELEGATE_DESCRIPTION"
-            value = ""   
-          }
-
-          env {
-            name = "DELEGATE_TAGS"
-            value = ""   
-          }
-
-          env {
-            name = "NEXT_GEN"
-            value = "true"   
-          }
-
-          env {
-              name = "DELEGATE_TOKEN"
-              value = var.harness_delegate_token
-            }
 
 
 
           env {
-           name = "WATCHER_STORAGE_URL"
-           value = "https://app.harness.io/public/free/freemium/watchers"
-          }
-          env{
-           name = "WATCHER_CHECK_LOCATION"
-           value = "current.version"
-          }
-
-          env{
-           name = "DELEGATE_STORAGE_URL"
-           value = "https://app.harness.io"
+            name  = "JAVA_OPTS"
+            value = "-Xms64M"
           }
 
 
           env {
-           name = "DELEGATE_CHECK_LOCATION"
-           value = "delegatefree.txt"
+            name  = "ACCOUNT_ID"
+            value = var.harness_account_id
           }
 
 
           env {
-           name = "HELM_DESIRED_VERSION"
-           value = ""
+            name  = "MANAGER_HOST_AND_PORT"
+            value = "https://app.harness.io/gratis"
           }
 
-
           env {
-          name = "CDN_URL"
-          value = "https://app.harness.io"
-         }
-
-
-          env{
-           name = "REMOTE_WATCHER_URL_CDN"
-           value = "https://app.harness.io/public/shared/watchers/builds"
+            name  = "DEPLOY_MODE"
+            value = "KUBERNETES"
           }
 
+          env {
+            name  = "DELEGATE_NAME"
+            value = var.delegate_name
+          }
 
           env {
-          name = "JRE_VERSION"
-          value = "11.0.14"
-         }
+            name  = "DELEGATE_TYPE"
+            value = "KUBERNETES"
+          }
 
-         env {
-          name = "HELM3_PATH"
-          value = ""
-         }
-
-
-         env {
-          name = "HELM_PATH"
-          value = ""
-         }
-
-         env {
-          name = "KUSTOMIZE_PATH"
-          value = ""
-         }
-
-         env {
-          name = "KUBECTL_PATH"
-          value = ""
-         }
-
-         env {
-          name = "POLL_FOR_TASKS"
-          value = "false"
-         }
-
-         env {
-          name = "ENABlE_CE"
-          value = "false"
-         }
-
-         env {
-           name = "PROXY_HOST"
-           value = ""
-         }
-         env {
-           name = "PROXY_PORT"
-           value = ""
-         }
-         env {
-           name = "PROXY_SCHEME"
-           value = ""
-         }
-         env {
-           name = "NO_PROXY"
-           value = ""
-         }
-
-
-         env {
-           name = "PROXY_MANAGER"
-           value = "true"
-         }
-         env {
-           name = "PROXY_USER"
-           value_from {
-            secret_key_ref {
-              name = "${var.delegate_name}-proxy"
-              key = "PROXY_USER"
-            }
-           }
-         }
-         env {
-          name = "PROXY_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = "${var.delegate_name}-proxy"
-              key = "PROXY_PASSWORD"
+          env {
+            name = "DELEGATE_NAMESPACE"
+            value_from {
+              field_ref {
+                field_path = "metadata.namespace"
+              }
             }
           }
-         }
 
-         env {
-          name = "GRPC_SERVICE_ENABLED"
-          value = "true"
-         }
-         env {
-          name = "GRPC_SERVICE_CONNECTOR_PORT"
-          value = "8080"
-         }
-  
-   
+          env {
+            name  = "INIT_SCRIPT"
+            value = ""
+          }
+
+          env {
+            name  = "DELEGATE_DESCRIPTION"
+            value = ""
+          }
+
+          env {
+            name  = "DELEGATE_TAGS"
+            value = ""
+          }
+
+          env {
+            name  = "NEXT_GEN"
+            value = "true"
+          }
+
+          env {
+            name  = "DELEGATE_TOKEN"
+            value = var.harness_delegate_token
+          }
+
+
+
+          env {
+            name  = "WATCHER_STORAGE_URL"
+            value = "https://app.harness.io/public/free/freemium/watchers"
+          }
+          env {
+            name  = "WATCHER_CHECK_LOCATION"
+            value = "current.version"
+          }
+
+          env {
+            name  = "DELEGATE_STORAGE_URL"
+            value = "https://app.harness.io"
+          }
+
+
+          env {
+            name  = "DELEGATE_CHECK_LOCATION"
+            value = "delegatefree.txt"
+          }
+
+
+          env {
+            name  = "HELM_DESIRED_VERSION"
+            value = ""
+          }
+
+
+          env {
+            name  = "CDN_URL"
+            value = "https://app.harness.io"
+          }
+
+
+          env {
+            name  = "REMOTE_WATCHER_URL_CDN"
+            value = "https://app.harness.io/public/shared/watchers/builds"
+          }
+
+
+          env {
+            name  = "JRE_VERSION"
+            value = "11.0.14"
+          }
+
+          env {
+            name  = "HELM3_PATH"
+            value = ""
+          }
+
+
+          env {
+            name  = "HELM_PATH"
+            value = ""
+          }
+
+          env {
+            name  = "KUSTOMIZE_PATH"
+            value = ""
+          }
+
+          env {
+            name  = "KUBECTL_PATH"
+            value = ""
+          }
+
+          env {
+            name  = "POLL_FOR_TASKS"
+            value = "false"
+          }
+
+          env {
+            name  = "ENABlE_CE"
+            value = "false"
+          }
+
+          env {
+            name  = "PROXY_HOST"
+            value = ""
+          }
+          env {
+            name  = "PROXY_PORT"
+            value = ""
+          }
+          env {
+            name  = "PROXY_SCHEME"
+            value = ""
+          }
+          env {
+            name  = "NO_PROXY"
+            value = ""
+          }
+
+
+          env {
+            name  = "PROXY_MANAGER"
+            value = "true"
+          }
+          env {
+            name = "PROXY_USER"
+            value_from {
+              secret_key_ref {
+                name = "${var.delegate_name}-proxy"
+                key  = "PROXY_USER"
+              }
+            }
+          }
+          env {
+            name = "PROXY_PASSWORD"
+            value_from {
+              secret_key_ref {
+                name = "${var.delegate_name}-proxy"
+                key  = "PROXY_PASSWORD"
+              }
+            }
+          }
+
+          env {
+            name  = "GRPC_SERVICE_ENABLED"
+            value = "true"
+          }
+          env {
+            name  = "GRPC_SERVICE_CONNECTOR_PORT"
+            value = "8080"
+          }
+
+
+        }
+        restart_policy = "Always"
+      }
     }
-    restart_policy = "Always"
   }
 }
-  }
-}  
 
 #### DELEGATE SERVICE ####
 
 resource "kubernetes_service" "delegateservice" {
   metadata {
-    name = "delegate-service"
-    namespace = "${var.delegate_namespace}"
+    name      = "delegate-service"
+    namespace = var.delegate_namespace
 
   }
   spec {
     selector = {
       "harness.io/name" = "${var.delegate_name}"
     }
-  
+
     port {
       port = 8080
     }
 
     type = "ClusterIP"
 
-    
-      
+
+
   }
 }
